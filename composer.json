@@ -27,7 +27,7 @@
 		"ext-random": "*"
 	},
 	"require-dev": {
-		"duon/dev": "^1.1",
+		"duon/dev": "dev-main",
 		"dealerdirect/phpcodesniffer-composer-installer": "^1",
 		"pestphp/pest": "^1",
 		"vimeo/psalm": "^6.10"
