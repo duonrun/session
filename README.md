@@ -7,3 +7,7 @@
 [![Quality Score](https://img.shields.io/scrutinizer/g/duonrun/session.svg)](https://scrutinizer-ci.com/g/duonrun/session)
 
 Helper classes for native PHP sessions and CSRF.
+
+## License
+
+This project is licensed under the [MIT license](LICENSE.md).
