@@ -43,8 +43,8 @@ class Session
 				// Cannot be provoked in the test suit
 				// @codeCoverageIgnoreStart
 				throw new RuntimeException(
-					__METHOD__ . 'Session started after headers sent. File: ' .
-						$file . ' line: ' . $line,
+					__METHOD__ . 'Session started after headers sent. File: '
+						. $file . ' line: ' . $line,
 				);
 				// @codeCoverageIgnoreEnd
 			}

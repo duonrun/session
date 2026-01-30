@@ -1,5 +1,4 @@
-Duon Sessions
-==============
+# Duon Sessions
 
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE.md)
 [![Coverage Status](https://img.shields.io/scrutinizer/coverage/g/duonrun/session.svg)](https://scrutinizer-ci.com/g/duonrun/session/code-structure)
