@@ -14,11 +14,6 @@ use SessionHandler;
  */
 class TestCase extends BaseTestCase
 {
-	public function __construct(?string $name = null, array $data = [], $dataName = '')
-	{
-		parent::__construct($name, $data, $dataName);
-	}
-
 	protected function setUp(): void
 	{
 		parent::setUp();

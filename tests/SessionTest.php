@@ -2,120 +2,150 @@
 
 declare(strict_types=1);
 
+namespace Duon\Session\Tests;
+
 use Duon\Session\OutOfBoundsException;
+use Duon\Session\RuntimeException;
 use Duon\Session\Session;
-use Duon\Session\Tests\TestCase;
 
-uses(TestCase::class);
+final class SessionTest extends TestCase
+{
+	private Session $session;
 
-beforeEach(function () {
-	$this->session = new Session();
-});
+	protected function setUp(): void
+	{
+		parent::setUp();
 
-afterEach(function () {
-	if ($this->session->active()) {
-		$this->session->forget();
+		$this->session = new Session();
 	}
-});
 
-test('Session set/has/get/name/id', function () {
-	$this->session->start();
-	$this->session->set('Chuck', 'Schuldiner');
+	protected function tearDown(): void
+	{
+		if ($this->session->active()) {
+			$this->session->forget();
+		}
 
-	expect($this->session->has('Chuck'))->toBe(true);
-	expect($this->session->get('Chuck'))->toBe('Schuldiner');
-	expect($this->session->name())->toBe('PHPSESSID');
-	expect($this->session->id())->not->toBeEmpty();
-});
+		parent::tearDown();
+	}
 
-test('Set fails when uninitialized', function () {
-	$this->session->set('Chuck', 'Schuldiner');
-})->throws(RuntimeException::class, 'Session not started');
+	public function testSessionSetHasGetNameId(): void
+	{
+		$this->session->start();
+		$this->session->set('Chuck', 'Schuldiner');
 
-test('Session unset', function () {
-	$this->session->start();
-	$this->session->set('Chuck', 'Schuldiner');
+		self::assertTrue($this->session->has('Chuck'));
+		self::assertSame('Schuldiner', $this->session->get('Chuck'));
+		self::assertSame('PHPSESSID', $this->session->name());
+		self::assertNotEmpty($this->session->id());
+	}
 
-	expect($this->session->get('Chuck'))->toBe('Schuldiner');
-	expect($this->session->has('Chuck'))->toBe(true);
+	public function testSetFailsWhenUninitialized(): void
+	{
+		$this->expectException(RuntimeException::class);
+		$this->expectExceptionMessage('Session not started');
 
-	$this->session->unset('Chuck');
+		$this->session->set('Chuck', 'Schuldiner');
+	}
 
-	expect($this->session->get('Chuck', null))->toBe(null);
-	expect($this->session->has('Chuck'))->toBe(false);
-});
+	public function testSessionUnset(): void
+	{
+		$this->session->start();
+		$this->session->set('Chuck', 'Schuldiner');
 
-test('Session throws when missing', function () {
-	$this->session->get('To exist in this world may be a mistake');
-})->throws(OutOfBoundsException::class, 'To exist in this world may be a mistake');
+		self::assertSame('Schuldiner', $this->session->get('Chuck'));
+		self::assertTrue($this->session->has('Chuck'));
 
-test('Session get default', function () {
-	expect($this->session->get('Rick', 'Rozz'))->toBe('Rozz');
-});
+		$this->session->unset('Chuck');
 
-test('Flash messages all', function () {
-	$this->session->start();
-	expect($this->session->hasFlashes())->toBe(false);
+		self::assertNull($this->session->get('Chuck', null));
+		self::assertFalse($this->session->has('Chuck'));
+	}
 
-	$this->session->flash('Your existence is a script');
-	$this->session->flash('Time is a thing we must accept', 'error');
+	public function testSessionThrowsWhenMissing(): void
+	{
+		$this->expectException(OutOfBoundsException::class);
+		$this->expectExceptionMessage("The session key 'To exist in this world may be a mistake' does not exist");
 
-	expect($this->session->hasFlashes())->toBe(true);
-	expect($this->session->hasFlashes('error'))->toBe(true);
-	expect($this->session->hasFlashes('info'))->toBe(false);
+		$this->session->get('To exist in this world may be a mistake');
+	}
 
-	$flashes = $this->session->popFlashes();
-	expect(count($flashes))->toBe(2);
-	expect($flashes[0]['queue'])->toBe('default');
-	expect($flashes[1]['queue'])->toBe('error');
-});
+	public function testSessionGetDefault(): void
+	{
+		self::assertSame('Rozz', $this->session->get('Rick', 'Rozz'));
+	}
 
-test('Flash messages queue', function () {
-	$this->session->start();
-	expect($this->session->hasFlashes())->toBe(false);
+	public function testFlashMessagesAll(): void
+	{
+		$this->session->start();
+		self::assertFalse($this->session->hasFlashes());
 
-	$this->session->flash('Your existence is a script');
-	$this->session->flash('Time is a thing we must accept', 'error');
+		$this->session->flash('Your existence is a script');
+		$this->session->flash('Time is a thing we must accept', 'error');
 
-	$flashes = $this->session->popFlashes('error');
-	expect(count($flashes))->toBe(1);
-	expect($flashes[0]['queue'])->toBe('error');
+		self::assertTrue($this->session->hasFlashes());
+		self::assertTrue($this->session->hasFlashes('error'));
+		self::assertFalse($this->session->hasFlashes('info'));
 
-	$flashes = $this->session->popFlashes();
-	expect(count($flashes))->toBe(1);
-	expect($flashes[0]['queue'])->toBe('default');
-});
+		$flashes = $this->session->popFlashes();
+		self::assertCount(2, $flashes);
+		self::assertSame('default', $flashes[0]['queue']);
+		self::assertSame('error', $flashes[1]['queue']);
+	}
 
-test('Flash messages fail when uninitialized', function () {
-	$this->session->flash('Your existence is a script');
-})->throws(RuntimeException::class, 'Session not started');
+	public function testFlashMessagesQueue(): void
+	{
+		$this->session->start();
+		self::assertFalse($this->session->hasFlashes());
 
-test('Remember URI', function () {
-	$this->session->rememberUri('https://www.example.com/albums');
+		$this->session->flash('Your existence is a script');
+		$this->session->flash('Time is a thing we must accept', 'error');
 
-	expect($this->session->rememberedUri())->toBe('https://www.example.com/albums');
-	expect($this->session->rememberedUri())->toBe('/');
+		$flashes = $this->session->popFlashes('error');
+		self::assertCount(1, $flashes);
+		self::assertSame('error', $flashes[0]['queue']);
 
-	// Test to return '/' when expired
-	$this->session->rememberUri('https://www.example.com/albums', -3600);
-	expect($this->session->rememberedUri())->toBe('/');
-});
+		$flashes = $this->session->popFlashes();
+		self::assertCount(1, $flashes);
+		self::assertSame('default', $flashes[0]['queue']);
+	}
 
-test('Session run start/forget', function () {
-	$this->session->start();
-	$this->session->set('Chuck', 'Schuldiner');
+	public function testFlashMessagesFailWhenUninitialized(): void
+	{
+		$this->expectException(RuntimeException::class);
+		$this->expectExceptionMessage('Session not started');
 
-	expect($this->session->get('Chuck'))->toBe('Schuldiner');
+		$this->session->flash('Your existence is a script');
+	}
 
-	$this->session->forget();
+	public function testRememberUri(): void
+	{
+		$this->session->rememberUri('https://www.example.com/albums');
 
-	expect($this->session->has('Chuck'))->toBe(false);
-});
+		self::assertSame('https://www.example.com/albums', $this->session->rememberedUri());
+		self::assertSame('/', $this->session->rememberedUri());
 
-test('Regenerate ID', function () {
-	$this->session->start();
-	$id = session_id();
-	$this->session->regenerate();
+		$this->session->rememberUri('https://www.example.com/albums', -3600);
+		self::assertSame('/', $this->session->rememberedUri());
+	}
 
-	expect(session_id())->not()->toBe($id);
-});
+	public function testSessionRunStartForget(): void
+	{
+		$this->session->start();
+		$this->session->set('Chuck', 'Schuldiner');
+
+		self::assertSame('Schuldiner', $this->session->get('Chuck'));
+
+		$this->session->forget();
+
+		self::assertFalse($this->session->has('Chuck'));
+	}
+
+	public function testRegenerateId(): void
+	{
+		$this->session->start();
+		$id = session_id();
+		$this->session->regenerate();
+
+		self::assertNotSame($id, session_id());
+	}
+}

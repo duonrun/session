@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Duon\Session\Tests;
 
-use ErrorException;
 use SessionHandlerInterface;
 
 class TestSessionHandler implements SessionHandlerInterface
@@ -27,11 +26,7 @@ class TestSessionHandler implements SessionHandlerInterface
 
 	public function read(string $id): string|false
 	{
-		try {
-			return $this->sessions[$id];
-		} catch (ErrorException) {
-			return '';
-		}
+		return $this->sessions[$id] ?? '';
 	}
 
 	public function write(string $id, string $data): bool
@@ -50,6 +45,6 @@ class TestSessionHandler implements SessionHandlerInterface
 
 	public function gc($maxlifetime): int|false
 	{
-		return true;
+		return 1;
 	}
 }

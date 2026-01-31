@@ -2,86 +2,94 @@
 
 declare(strict_types=1);
 
+namespace Duon\Session\Tests;
+
 use Duon\Session\Csrf;
 use Duon\Session\Session;
 
-test('Csrf get creates token', function () {
-	$session = new Session();
-	$csrf = new Csrf();
-	$token = $csrf->get();
+final class CsrfTest extends TestCase
+{
+	protected function tearDown(): void
+	{
+		unset($_POST['csrftoken'], $_SERVER['HTTP_X_CSRF_TOKEN'], $_SESSION['csrftokens']);
 
-	expect($token)->toHaveLength(44);
-	expect($session->get('csrftokens')['default'])->toBe($token);
+		parent::tearDown();
+	}
 
-	unset($_SESSION['csrftokens']);
-});
+	public function testCsrfGetCreatesToken(): void
+	{
+		$session = new Session();
+		$csrf = new Csrf();
+		$token = $csrf->get();
 
-test('Csrf verify post', function () {
-	$csrf = new Csrf();
-	$token = $csrf->get();
+		self::assertSame(44, strlen($token));
+		self::assertSame($token, $session->get('csrftokens')['default']);
+	}
 
-	$_POST['csrftoken'] = $token;
+	public function testCsrfVerifyPost(): void
+	{
+		$csrf = new Csrf();
+		$token = $csrf->get();
 
-	expect($csrf->verify())->toBe(true);
+		$_POST['csrftoken'] = $token;
 
-	$_POST['csrftoken'] = 'empty words';
+		self::assertTrue($csrf->verify());
 
-	expect($csrf->verify())->toBe(false);
+		$_POST['csrftoken'] = 'empty words';
 
-	unset($_POST['csrftoken'], $_SESSION['csrftokens']);
-});
+		self::assertFalse($csrf->verify());
+	}
 
-test('Csrf verify header', function () {
-	$csrf = new Csrf();
-	$token = $csrf->get();
+	public function testCsrfVerifyHeader(): void
+	{
+		$csrf = new Csrf();
+		$token = $csrf->get();
 
-	$_SERVER['HTTP_X_CSRF_TOKEN'] = $token;
+		$_SERVER['HTTP_X_CSRF_TOKEN'] = $token;
 
-	expect($csrf->verify())->toBe(true);
+		self::assertTrue($csrf->verify());
 
-	$_SERVER['HTTP_X_CSRF_TOKEN'] = 'empty words';
+		$_SERVER['HTTP_X_CSRF_TOKEN'] = 'empty words';
 
-	expect($csrf->verify())->toBe(false);
+		self::assertFalse($csrf->verify());
 
-	$_SERVER['HTTP_X_CSRF_TOKEN'] = 666;
+		$_SERVER['HTTP_X_CSRF_TOKEN'] = 666;
 
-	expect($csrf->verify())->toBe(false);
+		self::assertFalse($csrf->verify());
+	}
 
-	unset($_SERVER['HTTP_X_CSRF_TOKEN'], $_SESSION['csrftokens']);
-});
+	public function testCsrfVerifyEmptySession(): void
+	{
+		$csrf = new Csrf();
+		$token = $csrf->get();
 
-test('Csrf verify empty session', function () {
-	$csrf = new Csrf();
-	$token = $csrf->get();
+		$_SERVER['HTTP_X_CSRF_TOKEN'] = $token;
+		$_SESSION['csrftokens']['default'] = '';
 
-	$_SERVER['HTTP_X_CSRF_TOKEN'] = $token;
-	$_SESSION['csrftokens']['default'] = '';
+		self::assertFalse($csrf->verify());
+	}
 
-	expect($csrf->verify())->toBe(false);
+	public function testCsrfVerifyTokenNull(): void
+	{
+		$csrf = new Csrf();
 
-	unset($_SERVER['HTTP_X_CSRF_TOKEN'], $_SESSION['csrftokens']);
-});
+		self::assertFalse($csrf->verify());
+	}
 
-test('Csrf verify token null', function () {
-	$csrf = new Csrf();
+	public function testCsrfGetVerifyDifferentPage(): void
+	{
+		$csrf = new Csrf();
+		$tokenDefault = $csrf->get();
+		$tokenAlbums = $csrf->get('albums');
 
-	expect($csrf->verify())->toBe(false);
-});
+		$_POST['csrftoken'] = $tokenDefault;
 
-test('Csrf get/verify different page', function () {
-	$csrf = new Csrf();
-	$tokenDefault = $csrf->get();
-	$tokenAlbums = $csrf->get('albums');
+		self::assertTrue($csrf->verify());
+		self::assertFalse($csrf->verify('albums'));
 
-	$_POST['csrftoken'] = $tokenDefault;
+		$_POST['csrftoken'] = $tokenAlbums;
 
-	expect($csrf->verify())->toBe(true);
-	expect($csrf->verify('albums'))->toBe(false);
-
-	$_POST['csrftoken'] = $tokenAlbums;
-
-	expect($csrf->verify())->toBe(false);
-	expect($csrf->verify('albums'))->toBe(true);
-
-	unset($_POST['csrftoken'], $_SESSION['csrftokens']);
-});
+		self::assertFalse($csrf->verify());
+		self::assertTrue($csrf->verify('albums'));
+	}
+}

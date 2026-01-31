@@ -2,29 +2,29 @@
 
 declare(strict_types=1);
 
+namespace Duon\Session\Tests;
+
 use Duon\Session\Session;
-use Duon\Session\Tests\TestCase;
 
-uses(TestCase::class);
+final class NameTest extends TestCase
+{
+	public function testNamedSession(): void
+	{
+		$session = new Session('test');
+		$session->start();
 
-beforeEach(function () {
-	session_name('PHPSESSID');
-});
+		self::assertSame('test', $session->name());
 
-test('Named session', function () {
-	$session = new Session('test');
-	$session->start();
+		$session->forget();
+	}
 
-	expect($session->name())->toBe('test');
+	public function testUnnamedSession(): void
+	{
+		$session = new Session();
+		$session->start();
 
-	$session->forget();
-});
+		self::assertSame('PHPSESSID', $session->name());
 
-test('Unnamed session', function () {
-	$session = new Session();
-	$session->start();
-
-	expect($session->name())->toBe('PHPSESSID');
-
-	$session->forget();
-});
+		$session->forget();
+	}
+}

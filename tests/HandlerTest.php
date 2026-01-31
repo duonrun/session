@@ -2,21 +2,23 @@
 
 declare(strict_types=1);
 
+namespace Duon\Session\Tests;
+
 use Duon\Session\Session;
-use Duon\Session\Tests\TestCase;
-use Duon\Session\Tests\TestSessionHandler;
 
-uses(TestCase::class);
+final class HandlerTest extends TestCase
+{
+	public function testCustomHandler(): void
+	{
+		$handler = new TestSessionHandler();
+		$session = new Session('custom', handler: $handler);
+		$session->start();
+		$session->set('test', 'value');
 
-test('Custom handler', function () {
-	$handler = new TestSessionHandler();
-	$session = new Session('custom', handler: $handler);
-	$session->start();
-	$session->set('test', 'value');
+		self::assertSame('custom', $session->name());
+		self::assertSame('value', $session->get('test'));
+		self::assertTrue($handler->visited);
 
-	expect($session->name())->toBe('custom');
-	expect($session->get('test'))->toBe('value');
-	expect($handler->visited)->toBe(true);
-
-	$session->forget();
-});
+		$session->forget();
+	}
+}
