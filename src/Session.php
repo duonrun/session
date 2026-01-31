@@ -11,8 +11,8 @@ use SessionHandlerInterface;
 /** @psalm-api */
 class Session
 {
-	public const FLASH = 'duon_flash_messages';
-	public const REMEMBER = 'duon_remembered_uri';
+	public const string FLASH = 'duon_flash_messages';
+	public const string REMEMBER = 'duon_remembered_uri';
 
 	public function __construct(
 		protected readonly string $name = '',
