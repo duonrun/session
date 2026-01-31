@@ -78,12 +78,22 @@ class Session
 
 	public function name(): string
 	{
-		return session_name();
+		$name = session_name();
+		if ($name === false) {
+			throw new RuntimeException('Session name not available');
+		}
+
+		return $name;
 	}
 
 	public function id(): string
 	{
-		return session_id();
+		$id = session_id();
+		if ($id === false) {
+			throw new RuntimeException('Session id not available');
+		}
+
+		return $id;
 	}
 
 	/** @psalm-param non-empty-string $key */
