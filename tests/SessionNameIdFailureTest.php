@@ -3,13 +3,21 @@
 declare(strict_types=1);
 
 namespace Duon\Session {
-	function session_name(): string|false
+	function session_name(?string $name = null): string|false
 	{
+		if ($name !== null) {
+			return \session_name($name);
+		}
+
 		return \Duon\Session\Tests\SessionNameIdFailureTest::sessionNameResult();
 	}
 
-	function session_id(): string|false
+	function session_id(?string $id = null): string|false
 	{
+		if ($id !== null) {
+			return \session_id($id);
+		}
+
 		return \Duon\Session\Tests\SessionNameIdFailureTest::sessionIdResult();
 	}
 }
