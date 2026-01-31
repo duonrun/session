@@ -183,11 +183,18 @@ class Session
 			assert(is_array($flashes));
 			$_SESSION[self::FLASH] = [];
 		} else {
+			if (!isset($_SESSION[self::FLASH]) || !is_array($_SESSION[self::FLASH])) {
+				$_SESSION[self::FLASH] = [];
+
+				return [];
+			}
+
+			$flashMessages = $_SESSION[self::FLASH];
 			$key = 0;
 			$keys = [];
 			$flashes = [];
 
-			foreach ($_SESSION[self::FLASH] as $flash) {
+			foreach ($flashMessages as $flash) {
 				assert(isset($flash['queue']));
 				assert(isset($flash['message']));
 
@@ -200,11 +207,12 @@ class Session
 			}
 
 			foreach (array_reverse($keys) as $key) {
-				$flashMessages = $_SESSION[self::FLASH] ?? null;
-				if (is_array($flashMessages) && isset($flashMessages[$key])) {
-					unset($_SESSION[self::FLASH][$key]);
+				if (isset($flashMessages[$key])) {
+					unset($flashMessages[$key]);
 				}
 			}
+
+			$_SESSION[self::FLASH] = $flashMessages;
 		}
 
 		return $flashes;
