@@ -58,7 +58,8 @@ class Session
 
 		// If it's desired to kill the session, also delete the session cookie.
 		// Note: This will destroy the session, and not just the session data!
-		if (ini_get('session.use_cookies')) {
+		$useCookies = ini_get('session.use_cookies');
+		if ($useCookies === '1') {
 			$params = session_get_cookie_params();
 			setcookie(
 				session_name(),
@@ -186,13 +187,9 @@ class Session
 			}
 
 			foreach (array_reverse($keys) as $key) {
-				if (
-					($_SESSION[self::FLASH] ?? null)
-					&& is_array($_SESSION[self::FLASH])
-				) {
-					if (isset($_SESSION[self::FLASH][$key])) {
-						unset($_SESSION[self::FLASH][$key]);
-					}
+				$flashMessages = $_SESSION[self::FLASH] ?? null;
+				if (is_array($flashMessages) && isset($flashMessages[$key])) {
+					unset($_SESSION[self::FLASH][$key]);
 				}
 			}
 		}
@@ -205,7 +202,7 @@ class Session
 		/** @var array */
 		$messages = $_SESSION[self::FLASH] ?? [];
 
-		if ($queue) {
+		if ($queue !== null) {
 			return count(array_filter(
 				$messages,
 				fn(array $f) => $f['queue'] === $queue,
