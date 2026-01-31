@@ -61,15 +61,18 @@ class Session
 		$useCookies = ini_get('session.use_cookies');
 		if ($useCookies === '1') {
 			$params = session_get_cookie_params();
-			setcookie(
-				session_name(),
-				'',
-				time() - 42000,
-				(string) $params['path'],
-				(string) $params['domain'],
-				(bool) $params['secure'],
-				(bool) $params['httponly'],
-			);
+			$name = session_name();
+			if ($name !== false) {
+				setcookie(
+					$name,
+					'',
+					time() - 42000,
+					(string) $params['path'],
+					(string) $params['domain'],
+					(bool) $params['secure'],
+					(bool) $params['httponly'],
+				);
+			}
 		}
 
 		// Finally, destroy the session.
