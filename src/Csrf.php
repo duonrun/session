@@ -26,7 +26,7 @@ class Csrf
 
 	public function verify(
 		string $page = 'default',
-		string $token = null,
+		?string $token = null,
 	): bool {
 		if ($token === null) {
 			$token = $_POST[$this->postKey] ?? null;
